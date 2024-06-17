@@ -1,6 +1,6 @@
-const jwt = require('jsonwebtoken');
-const jwtPassword = 'secret';
-
+const jwt = require("jsonwebtoken");
+const jwtPassword = "secret";
+const zod = require("zod");
 
 /**
  * Generates a JWT for a given username and password.
@@ -13,8 +13,25 @@ const jwtPassword = 'secret';
  *                        Returns null if the username is not a valid email or
  *                        the password does not meet the length requirement.
  */
+
+schemas = zod.object({
+  username: zod.string().email(),
+  password: zod.string().min(6),
+});
+
 function signJwt(username, password) {
-    // Your code here
+  // Your code here
+
+  const inputcheck = schemas.safeParse({
+    username: username,
+    password: password,
+  });
+
+  if (!(inputcheck.success)) return null;
+
+  token = jwt.sign({ username: username, password: password }, jwtPassword);
+
+  return token;
 }
 
 /**
@@ -26,7 +43,14 @@ function signJwt(username, password) {
  *                    using the secret key.
  */
 function verifyJwt(token) {
-    // Your code here
+  // Your code here
+  let ans = true;
+  try {
+    jwt.verify(token, jwtPassword);
+  } catch (err) {
+    ans = false;
+  }
+  return ans;
 }
 
 /**
@@ -37,9 +61,14 @@ function verifyJwt(token) {
  *                         Returns false if the token is not a valid JWT format.
  */
 function decodeJwt(token) {
-    // Your code here
+  // Your code here
+  const decoded = jwt.decode(token);
+  if (decoded) {
+    return true;
+  } else {
+    return false;
+  }
 }
-
 
 module.exports = {
   signJwt,
@@ -47,3 +76,4 @@ module.exports = {
   decodeJwt,
   jwtPassword,
 };
+
